@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+.buttonA {
+  background-color: #4CAF50;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  margin: 4px 2px;
+  cursor: pointer;
+  font-size: 28px;
+}
+</style>
+</head>
+
+
+<body>
+<button class="buttonA" onclick="toggleStartStop();">START/STOP</button>
+<button class="buttonA" onclick="step();">STEP</button>
+Number of circles: 
+<input type="text" id="nCirclesInput" value=4 onkeypress="keyPressHandler(event);">
+<br/>
+ 
+<canvas id="myCanvas" width="800" height="700" onclick="mouseClickHandler(event)"></canvas>
+
+
+<script>
+
+	var canvas = document.getElementById("myCanvas");
+	var ctx = canvas.getContext("2d");
+	
+
+	var ballRadius = 5;		//ball radius
+
+	var majorC = { _x: 400, _y: 350 }
+	var majorRadius = 100;
+
+	var numCircles = 64;
+	var c_array = [];
+	var cRadius = 200;
+
+	var param = 0;			//current param on the circle
+	var delta = 0.02;		//param increment/speed	
+	var goStatus = true;	//true for animation
+	
+
+	function getPointFromCircleParam(cen_x, cen_y, R, t)
+	{
+		//param goes from 0 to 2pi. 
+		var px = R*Math.cos(t);
+		var py = R*Math.sin(t);
+		
+		px = px + cen_x;
+		py = py + cen_y;
+		var pt = { _x: px, _y: py }
+		return pt;
+	}
+
+
+	var is_setup = false;
+	function setup()
+	{
+		param = 0;
+		c_array = [];
+		numCircles = document.getElementById("nCirclesInput").value;
+		var deltaT = 2*Math.PI / numCircles;
+
+		for (i=0; i<numCircles; ++i)
+		{
+			var t = i*deltaT;
+			var cp = getPointFromCircleParam(majorC._x, majorC._y, majorRadius, t);
+			c_array.push(cp);
+		}
+		is_setup = true;
+	}
+
+
+	function drawBallFromPoint(pt)
+	{
+		ctx.beginPath();
+		ctx.arc(pt._x, pt._y, ballRadius, 0, Math.PI*2);
+		ctx.fillStyle = "#0095DD";
+		ctx.fill();
+		ctx.closePath();
+	}
+	
+	function drawTrajectoryCircle(pt, rad)
+	{
+		ctx.beginPath();
+		ctx.arc(pt._x, pt._y, rad, 0, Math.PI*2);
+		ctx.strokeStyle = "#220022";
+		ctx.stroke();
+		ctx.closePath();
+	}
+
+	function drawBallFromParamCentreRadius(t, c, rad)
+	{
+		var pt = getPointFromCircleParam(c._x, c._y, rad, t);
+		drawBallFromPoint(pt);
+	}
+
+
+	function drawBall(i)
+	{
+		var c = c_array[i];
+		var delta = 2*Math.PI/numCircles; 
+		var phase = i*delta;
+		var t = param - phase;
+
+		drawBallFromParamCentreRadius(t, c, cRadius);
+	}
+
+	function drawBalls()
+	{
+		for (i=0; i<c_array.length; ++i)
+		{
+			drawBall(i);
+		}
+	}
+		
+
+	//draw trajectory circles
+	function drawCircles()
+	{
+		for (i=0; i<c_array.length; ++i)
+		{
+			var pt = c_array[i];
+			drawTrajectoryCircle(pt, cRadius);
+		}
+	}
+
+
+	function modelUpdater()
+	{
+		if (!goStatus)
+			return;
+		param = param + delta;
+	}
+	
+	function draw()
+	{
+		if (!is_setup)
+			setup();
+
+		ctx.clearRect(0,0, canvas.width, canvas.height);
+
+		drawCircles();
+
+		modelUpdater();
+		drawBalls();	
+	}
+	
+
+	//start/stop animation
+	function toggleStartStop()
+	{
+		goStatus = !goStatus;
+	}
+
+	//if animation stopped, progress param to next delta
+	function step()
+	{
+		if (goStatus)
+			return;
+		param = param + delta;
+	}
+
+
+	function keyPressHandler(event)
+	{
+		var kc = event.keyCode;
+		if (kc == 13)
+			setup();
+	}
+
+	function mouseClickHandler(event)
+	{
+		if (event.button == 0)
+			toggleStartStop();
+		else if (event.button == 2)
+			step();
+	}
+
+	setInterval(draw, 10);
+
+
+
+</script>
+
+<p></p>
+
+</body>
+
+</html>
