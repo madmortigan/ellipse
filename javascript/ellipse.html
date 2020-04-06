@@ -16,8 +16,9 @@
   cursor: pointer;
   font-size: 22px;
 }
-input[type=text] {
-  width: 4%;
+input[type=number] {
+  width: 8%;
+  font-size: 20px;
 }
 </style>
 </head>
@@ -26,10 +27,10 @@ input[type=text] {
 <body>
 <button class="buttonA" onclick="toggleStartStop();">START/STOP</button>
 <button class="buttonA" onclick="step();">STEP</button>
-Number of circles: 
-<input type="text" id="nCirclesInput" value=4 onkeypress="keyPressHandler(event);">
-Phase: 
-<input type="text" id="phaseFactor" value=-1 onkeypress="keyPressHandler(event);">
+N Circles:<input type="number" id="nCirclesInput" value=4 onchange="inputChangeHandler();" onkeypress="keyPressHandler(event);">
+Phase:<input type="number" id="phaseFactor" value=-1 onchange="inputChangeHandler();" onkeypress="keyPressHandler(event);">
+Radius:<input type="number" id="circleRadius" value=200 max="300" onchange="inputChangeHandler();" onkeypress="keyPressHandler(event);">
+<button class="buttonA" onclick="setHandler();">SET</button>
 <br />
 
 <center>
@@ -77,6 +78,7 @@ Phase:
 		c_array = [];
 		numCircles = document.getElementById("nCirclesInput").value;
 		phaseFactor = document.getElementById("phaseFactor").value;
+		cRadius = document.getElementById("circleRadius").value;
 
 		var deltaT = 2*Math.PI / numCircles;
 
@@ -103,7 +105,7 @@ Phase:
 	{
 		ctx.beginPath();
 		ctx.arc(pt._x, pt._y, rad, 0, Math.PI*2);
-		ctx.strokeStyle = "#220022";
+		ctx.strokeStyle = "#cccccc";
 		ctx.stroke();
 		ctx.closePath();
 	}
@@ -150,6 +152,8 @@ Phase:
 		if (!goStatus)
 			return;
 		param = param + delta;
+		if (param >= 2*Math.PI)
+			param = 0;
 	}
 	
 	function draw()
@@ -195,6 +199,17 @@ Phase:
 		else if (event.button == 2)
 			step();
 	}
+
+	function setHandler()
+	{
+		setup();
+	}
+
+	function inputChangeHandler()
+	{
+		setup();
+	}
+
 
 	setInterval(draw, 10);
 
